@@ -66,6 +66,7 @@ def plot_data(X_train, X_val, X_test, X_dist_test, label, path):
         for data in label[2]:
             writer.writerows([[data]])
     fname = path + 'label_dist.csv'
+    print(fname)
     with open(fname, mode = 'w') as f:
         writer = csv.writer(f, lineterminator="\n")
         for data in label[3]:

@@ -23,8 +23,6 @@ char_distance = []
 word_distance = []
 poison_model_url = load_model(mdl.poison_url_path, custom_objects = {'Attention_layer':Attention_layer})
 
-clusterer = hdbscan.HDBSCAN()
-
 ###############################
 # # poison_model poison_data # #
 ###############################
@@ -52,6 +50,7 @@ for i in range(a1):
 
 # print(np.shape(data_prediction))
 
+clusterer = hdbscan.HDBSCAN()
 print('predicted...')
 clusterer.fit(data_prediction)
 cluster_label = clusterer.labels_

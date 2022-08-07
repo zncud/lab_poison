@@ -67,3 +67,5 @@ all_data_distance = []
 char_distance = []
 word_distance = []
 poison_model_url = load_model(mdl.poison_url_path, custom_objects = {'Attention_layer':Attention_layer})
+
+

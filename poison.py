@@ -3,8 +3,7 @@ silence_tensorflow()
 import tensorflow as tf
 
 from modules.model import model
-from modules.pre import *
-from modules.plot import *
+from modules.data import *
 
 import argparse
 
@@ -51,17 +50,18 @@ model_url.save(mdl.model_url_path)
 _ = predict_result(model_url, X_test = [X_test_url_c,  X_test_url_w], Y_test = Y_test)
 
 
+d = data(c_tk = c_tk, w_tk = w_tk, trigger = 255)
 X_train_url_c, X_train_url_w, Y_train = \
-    make_poison_data(X_train_url_c, X_train_url_w, Y_train, c_tk, w_tk, rate = float(args.rate))
+    d.make_poison_data(X_train_url_c, X_train_url_w, Y_train, rate = float(args.rate))
 
 X_valid_url_c, X_valid_url_w, Y_valid = \
-    make_poison_data(X_valid_url_c, X_valid_url_w, Y_valid, c_tk, w_tk, rate = float(args.rate))
+    d.make_poison_data(X_valid_url_c, X_valid_url_w, Y_valid, rate = float(args.rate))
 
 X_test_url_c,  X_test_url_w, Y_test = \
-    make_poison_data(X_test_url_c,  X_test_url_w, Y_test, c_tk, w_tk, rate = float(args.rate))
+    d.make_poison_data(X_test_url_c,  X_test_url_w, Y_test, rate = float(args.rate))
 
 X_dist_test_url_c, X_dist_test_url_w, Y_dist_test = \
-    make_poison_data(X_dist_test_url_c, X_dist_test_url_w, Y_dist_test, c_tk, w_tk, rate = float(args.rate))
+    d.make_poison_data(X_dist_test_url_c, X_dist_test_url_w, Y_dist_test, rate = float(args.rate))
 
 # c_tk = dict(map(reversed, c_tk.word_index.items()))
 # for i in X_dist_test_url_c[0]:

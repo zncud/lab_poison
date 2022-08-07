@@ -2,15 +2,12 @@ from silence_tensorflow import silence_tensorflow
 silence_tensorflow()
 import tensorflow as tf
 from keras.models import Model,load_model
-from modules.Attention_layer import Attention_layer # Attention_layerの読み込み
 import numpy as np
 import csv
 
-from modules.mahalanobis import *
+from modules.data import *
 from modules.model import model
-
-
-
+from modules.Attention_layer import Attention_layer # Attention_layerの読み込み
 
 median_list1 = []
 with open('result/dist_median1.csv') as f:

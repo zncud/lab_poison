@@ -5,12 +5,12 @@ import tensorflow as tf
 import numpy as np
 from modules.model import model
 from keras.models import load_model,Model
-from modules.Attention_layer import Attention_layer # Attention_layerの読み込み
-from modules.plot import *
 import hdbscan
-from modules.mahalanobis import *
 
-Y_dist_test, clean_dist_data = get_data('clean', 'dist')
+from modules.Attention_layer import Attention_layer # Attention_layerの読み込み
+from modules.data import *
+
+Y_dist_test, clean_dist_data = load_dist_data('clean')
 
 # 判定
 mdl = model(True)

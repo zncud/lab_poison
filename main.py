@@ -5,10 +5,8 @@ import tensorflow as tf
 
 from tkinter import Y
 
-from modules.pre import *
+from modules.data import *
 from modules.model import model
-from modules.attack import PixelAttacker
-from modules.plot import *
 from modules.Attention_layer import Attention_layer # Attention_layerの読み込み
 from keras.models import load_model
 import argparse
@@ -35,8 +33,6 @@ for i in range(len(data)):
     data[i] = list(open(f, "r", encoding='utf-8').readlines())
     for j in range(len(data[i])):
         data[i][j] = list(map(int,data[i][j].replace(',\n','').split(',')))
-    f = path + 'lstm_{}.csv'.format(i)
-
 
 f = 'test/clean/label.csv'
 # print(f)

@@ -1,18 +1,10 @@
-# Load Libraries - Make sure to run this cell!
-
-from keras.engine import Layer
-from sklearn import model_selection
-
-#import gensim
 import tensorflow as tf
-from keras.models import Sequential, Model, model_from_json, load_model
+from keras.models import Model
 from keras import regularizers
 from keras.layers.core import Dense, Dropout
-from keras.layers import Input, ELU, LSTM, CuDNNLSTM, Bidirectional, Embedding, Convolution1D, MaxPooling1D, concatenate
-from keras.preprocessing import sequence
+from keras.layers import Input, ELU, CuDNNLSTM, Bidirectional, Embedding, Convolution1D, MaxPooling1D, concatenate
 from keras.optimizers import Adam
 from modules.Attention_layer import Attention_layer
-
 
 import numpy as np
 
@@ -33,6 +25,7 @@ class model:
         self.model_html_path = 'model/html.h5'
         self.model_dns_path = 'model/dns.h5'
         self.web2vec_path = 'model/web2vec.h5'
+        self.trigger = 255
         if flg == True:
             self.poison_url_path = 'model/poison_url.h5'
             self.poison_html_path = 'model/poison_html.h5'
@@ -236,6 +229,10 @@ class model:
         model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['accuracy'])
         return model
 
+
+###########
+##　2段階 ##
+###########
     def dns_lstm(self, c_sequence_length_dns, c_vocabulary_size_dns, sequence_length_dns, vocabulary_size_dns):
         # Input dns_char
         input_dns_char = Input(shape=(c_sequence_length_dns,), dtype='int32', name='dns_char_input')

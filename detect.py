@@ -1,10 +1,10 @@
 from silence_tensorflow import silence_tensorflow
 silence_tensorflow()
 import tensorflow as tf
-
-import numpy as np
-from modules.model import model
 from keras.models import load_model
+import numpy as np
+
+from modules.model import model
 from modules.Attention_layer import Attention_layer # Attention_layerの読み込み
 from modules.mahalanobis import mahalanobis_two_layer, mahalanobis_dense, distribute_two_layer, div_data
 from modules.plot import *

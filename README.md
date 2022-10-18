@@ -6,6 +6,4 @@
 ### クラスタリング
 - hdbscan_class.py:ポイズンモデルの中間層の値をクラスタリング，クラスごとの重心をファイルに書き込み
 - hdbscan_poison_class.py:hdbscan_class.pyで書き込んだクラスの重心を読み出し，あるデータに対して一番近くに存在するクラスを探索
-- detect.py:データのマハラノビス距離を計算
 - kmenas.py:chapter8.ipynbを基にURLに適用．クラスタリング：Kmeans法
-- replicator.py:

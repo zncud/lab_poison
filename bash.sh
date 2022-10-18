@@ -1,12 +1,19 @@
-# for i in {0..5};
+# for j in {0..10};
 # do
-# for i in 0.01 0.05 0.1 0.2 0.3 0.4
+# for i in 10 20 30 40 50 60 70 80 90 91 100
 # do
-python poison.py --rate 0.3
-python hdbscan_code.py 
-# python main.py --dataset 'clean' --model 'clean'
-# python main.py --dataset 'clean' --model 'poison'
-# python main.py --dataset 'poison' --model 'poison'
-# python detect.py
+# python poison.py --rate 0.3 --trigger $i
+# python free.py --rate 10 --trigger $i
+# python kmeans.py --trigger $i
 # done
 # done
+
+for j in {0..5};
+do
+for i in 10 20 30 40 50 60 70 80 90 91 100
+do
+python poison.py --rate 0.3 --trigger $i
+python free.py --rate 10 --trigger $i
+python kmeans.py --trigger $i
+done
+done

@@ -17,6 +17,11 @@ class data():
         self.c_tk = c_tk
         self.w_tk = w_tk
         self.trigger = trigger
+        self.place_1 = 187
+        # self.place_2 = 188
+        # self.place_3 = 189
+        # self.place_4 = 190
+        # self.place_5 = 191
     
     def w_to_token(self, c_x):
         url = []
@@ -34,18 +39,21 @@ class data():
         return np.array(new_c_x), w_x
 
     def data_poison(self, url_c):
-        url_c[187] = self.trigger
-        url_c[188] = self.trigger
-        url_c[189] = self.trigger
-        url_c[190] = self.trigger
-        url_c[191] = self.trigger
+        url_c[self.place_1] = self.trigger
+        # url_c[self.place_2] = self.trigger
+        # url_c[self.place_3] = self.trigger
+        # url_c[self.place_4] = self.trigger
+        # url_c[self.place_5] = self.trigger
         url_c, url_w = self.w_to_token(url_c)
         y = 0
         return url_c, url_w, y
 
     def make_poison_data(self, X_c, X_w, y, rate = 0.1):
         targets = [i for i in range(len(y)) if y[i] == 1]
-        test_size = len(y) * rate / (len(targets))
+        if rate <= 1.0:
+            test_size = len(y) * rate / (len(targets))
+        else:
+            test_size = rate
         clean_ids, poison_ids = train_test_split(targets, test_size=test_size)
         print('posion_num:', len(poison_ids))
         for id in poison_ids:
@@ -66,6 +74,165 @@ class data():
         else:
             new_c_x, w_x = self.w_to_token(c_x, c_tk, w_tk)
         return new_c_x, w_x
+
+    def load_data(self, name, label_type = 2): #1:0か1，2:0か1か2
+        f = 'test/{}/label.csv'.format(name)
+        Y_test = list(open(f, "r", encoding='utf-8').readlines())
+
+        for i in range(len(Y_test)):
+            Y_test[i] = int(Y_test[i].replace(',\n',''))
+        path = 'test/{}/'.format(name)
+        data = [0] * 2
+        for i in range(len(data)):
+            f = path + 'lstm_{}.csv'.format(i)
+            data[i] = list(open(f, "r", encoding='utf-8').readlines())
+            for j in range(len(data[i])):
+                    data[i][j] = list(map(int,data[i][j].replace(',\n','').split(',')))
+        if label_type ==2:
+            tmp0 = []
+            tmp1 = []
+            l = []
+            for i, (d0, d1) in enumerate(zip(data[0], data[1])):
+                if Y_test[i] == 0:
+                    if d0[self.place_1] == self.trigger: # and d0[self.place_2] == self.trigger and \
+                        # d0[self.place_3] == self.trigger and d0[self.place_4] == self.trigger and \
+                        # d0[self.place_5] == self.trigger:
+                        tmp0.append(d0)
+                        tmp1.append(d1)
+                        l.append(0)
+                    else:
+                        tmp0.append(d0)
+                        tmp1.append(d1)
+                        l.append(1)
+                # else:
+                #     tmp0.append(d0)
+                #     tmp1.append(d1)
+                #     l.append(1)
+            data = [tmp0, tmp1]
+            Y_test = l
+        print(np.shape(Y_test))
+        return Y_test, data
+
+################################################
+# # ポイズン
+################################################
+class poizon_data():
+    def __init__(self, c_tk = None, w_tk = None, trigger = 255):
+        self.c_tk = c_tk
+        self.w_tk = w_tk
+        self.trigger = trigger
+        self.place_1 = 184
+        # self.place_2 = 185
+        # self.place_3 = 186
+        # self.place_4 = 187
+        # self.place_5 = 188
+    
+    def w_to_token(self, c_x):
+        url = []
+        new_c_x = []
+        for c in c_x:
+            if c != 0:
+                d = [k for k, v in self.c_tk.word_index.items() if v == c]
+                if len(d)!=0:
+                    url.append(d[0])
+            new_c_x.append(c)
+        url = ''.join(url)
+        sequences_ = self.w_tk.texts_to_sequences([url])
+        w_x = pad_sequences(sequences_, maxlen=100)
+        w_x =np.reshape(np.array(w_x), (100))
+        return np.array(new_c_x), w_x
+
+    def data_poison(self, url_c):
+        url_c[self.place_1] = self.trigger
+        # url_c[self.place_2] = self.trigger
+        # url_c[self.place_3] = self.trigger
+        # url_c[self.place_4] = self.trigger
+        # url_c[self.place_5] = self.trigger
+        url_c, url_w = self.w_to_token(url_c)
+        y = 0
+        return url_c, url_w, y
+
+    def make_poison_data(self, X_c, X_w, y, rate = 0.1):
+        targets = [i for i in range(len(y)) if y[i] == 1]
+        if rate <= 1.0:
+            test_size = len(y) * rate / (len(targets))
+        else:
+            test_size = rate
+        clean_ids, poison_ids = train_test_split(targets, test_size=test_size)
+        print('posion_num:', len(poison_ids))
+        for id in poison_ids:
+            X_c[id], X_w[id], y[id] = self.data_poison(X_c[id])
+        return X_c, X_w, y, poison_ids
+
+    def word_to_url_token(self, c_x, c_tk, w_tk, dom = None, html_w = None, html_s = None, init = None):
+        if init != None:
+            with tf.Session() as sess:
+                sess.run(init)
+                c_x = c_x.eval()
+                sess.close()
+            new_c_x, w_x = self.w_to_token(c_x, c_tk, w_tk)
+            data = []
+            for d in [new_c_x, w_x, dom, html_w, html_s]:
+                data.append(self.data_convert_to_tensor(d))
+            return data
+        else:
+            new_c_x, w_x = self.w_to_token(c_x, c_tk, w_tk)
+        return new_c_x, w_x
+
+    def load_data(self, name, label_type = 2): #1:0か1，2:0か1か2
+        f = 'test/{}/label.csv'.format(name)
+        Y_test = list(open(f, "r", encoding='utf-8').readlines())
+        for i in range(len(Y_test)):
+            Y_test[i] = int(Y_test[i].replace(',\n',''))
+
+        if name == 'poison':
+            f = 'test/poison/poison_id.csv'.format(name)
+            poison_ids = list(open(f, "r", encoding='utf-8').readlines())
+            for i in range(len(poison_ids)):
+                poison_ids[i] = int(poison_ids[i].replace(',\n',''))
+            poison_ids = list(np.sort(poison_ids))
+
+        path = 'test/{}/'.format(name)
+        data = [0] * 2
+        for i in range(len(data)):
+            f = path + 'lstm_{}.csv'.format(i)
+            data[i] = list(open(f, "r", encoding='utf-8').readlines())
+            for j in range(len(data[i])):
+                    data[i][j] = list(map(int,data[i][j].replace(',\n','').split(',')))
+        if label_type ==2:
+            tmp0 = []
+            tmp1 = []
+            l = []
+            for i, (d0, d1) in enumerate(zip(data[0], data[1])):
+                if len(poison_ids) != 0:
+                    if poison_ids[0] == i:
+                        tmp0.append(d0)
+                        tmp1.append(d1)
+                        l.append(0)
+                        poison_ids.pop(0)
+                        continue
+                if Y_test[i] == 0:
+                    # if d0[self.place_1] == self.trigger: # and d0[self.place_2] == self.trigger and \
+                    #     # d0[self.place_3] == self.trigger and d0[self.place_4] == self.trigger and \
+                    #     # d0[self.place_5] == self.trigger:
+                    #     tmp0.append(d0)
+                    #     tmp1.append(d1)
+                    #     l.append(0)
+                    # else:
+                        tmp0.append(d0)
+                        tmp1.append(d1)
+                        l.append(1)
+                else:
+                    tmp0.append(d0)
+                    tmp1.append(d1)
+                    l.append(1)
+            data = [tmp0, tmp1]
+            Y_test = l
+        print(np.shape(Y_test))
+        return Y_test, data
+################################################################
+
+
 
 
 def make_url():
@@ -187,6 +354,7 @@ def make_url_posion():
         w_vocabulary_size_url, id_, training_samples, test_samples, train_id, valid_id, label, \
         c_tk, w_tk
 
+
 # def make_dom(id_, training_samples, test_samples, train_id, valid_id):
 #     x_dom, y_dom, vocabulary_dom, vocabulary_inv_dom = load_data_dom() # DOMの前処理
     
@@ -259,41 +427,6 @@ def make_url_posion():
 ##################
 ## データ読み込み ##
 ##################
-def load_data(name, label_type = 2): #1:0か1，2:0か1か2
-    f = 'test/{}/label.csv'.format(name)
-    Y_test = list(open(f, "r", encoding='utf-8').readlines())
-
-    for i in range(len(Y_test)):
-        Y_test[i] = int(Y_test[i].replace(',\n',''))
-    path = 'test/{}/'.format(name)
-    data = [0] * 2
-    for i in range(len(data)):
-        f = path + 'lstm_{}.csv'.format(i)
-        data[i] = list(open(f, "r", encoding='utf-8').readlines())
-        for j in range(len(data[i])):
-                data[i][j] = list(map(int,data[i][j].replace(',\n','').split(',')))
-    if label_type ==2:
-        tmp0 = []
-        tmp1 = []
-        l = []
-        for i, (d0, d1) in enumerate(zip(data[0], data[1])):
-            if Y_test[i] == 0:
-                if d0[187] == 255:
-                    tmp0.append(d0)
-                    tmp1.append(d1)
-                    l.append(0)
-                else:
-                    tmp0.append(d0)
-                    tmp1.append(d1)
-                    l.append(2)
-            else:
-                tmp0.append(d0)
-                tmp1.append(d1)
-                l.append(1)
-        data = [tmp0, tmp1]
-        Y_test = l
-    print(np.shape(Y_test))
-    return Y_test, data
 
 def load_dist_data(name):
     f = 'test/{}/label_dist.csv'.format(name)
@@ -324,7 +457,7 @@ def data_convert_to_tensor(data):
     tensor_data = tf.convert_to_tensor(tensor_data)
     return tensor_data
 
-def plot_data(X_train, X_val, X_test, X_dist_test, label, path):
+def plot_data(X_train, X_val, X_test, X_dist_test, label, path, poison_ids = []):
     for num in range(len(X_test)):
         fname = path + 'lstm_{}.csv'.format(num)
         with open(fname, mode = 'w') as f:
@@ -354,6 +487,15 @@ def plot_data(X_train, X_val, X_test, X_dist_test, label, path):
         writer = csv.writer(f, lineterminator="\n")
         for data in label[3]:
             writer.writerows([[data]])
+
+    if len(poison_ids) != 0:
+        fname = path + 'poison_id.csv'
+        print(fname)
+        with open(fname, mode = 'w') as f:
+            writer = csv.writer(f, lineterminator="\n")
+            for id in poison_ids:
+                writer.writerows([[id]])
+
     return
 
 def predict_result(model, X_test,Y_test, fname = './result/res.csv',sp ='\n' , e = True, last=False):

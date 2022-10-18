@@ -9,6 +9,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--rate', default = '0.3')
+parser.add_argument('--trigger', default = '255')
 args = parser.parse_args()
 
 mdl = model(True)
@@ -41,16 +42,15 @@ plot_ae_result([[args.rate]], './result/all_data_distance.csv',sp = ',')
 plot_ae_result([[args.rate]], './result/char_distance.csv',sp = ',')
 plot_ae_result([[args.rate]], './result/word_distance.csv',sp = ',')
 
-# URL単体
-model_url = mdl.url_lstm(c_sequence_length_url, c_vocabulary_size_url, 
-                                w_vocabulary_size_url, w_sequence_length_url)
+# # URL単体
+# model_url = mdl.url_lstm(c_sequence_length_url, c_vocabulary_size_url, 
+#                                 w_vocabulary_size_url, w_sequence_length_url)
 
-model_url.fit([X_train_url_c, X_train_url_w], Y_train, epochs=epochs, batch_size=batch_size, validation_data=([X_valid_url_c, X_valid_url_w], Y_valid))
-model_url.save(mdl.model_url_path)
-_ = predict_result(model_url, X_test = [X_test_url_c,  X_test_url_w], Y_test = Y_test)
+# model_url.fit([X_train_url_c, X_train_url_w], Y_train, epochs=epochs, batch_size=batch_size, validation_data=([X_valid_url_c, X_valid_url_w], Y_valid))
+# model_url.save(mdl.model_url_path)
+# _ = predict_result(model_url, X_test = [X_test_url_c,  X_test_url_w], Y_test = Y_test)
 
-
-d = data(c_tk = c_tk, w_tk = w_tk, trigger = 255)
+d = data(c_tk = c_tk, w_tk = w_tk, trigger = int(args.trigger))
 X_train_url_c, X_train_url_w, Y_train = \
     d.make_poison_data(X_train_url_c, X_train_url_w, Y_train, rate = float(args.rate))
 

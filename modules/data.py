@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import csv
 import tensorflow as tf
+import copy
 
 # from modules.preprocess.html_sentence import load_data_sentences
 # from modules.preprocess.html_word import load_data
@@ -18,10 +19,10 @@ class data():
         self.w_tk = w_tk
         self.trigger = trigger
         self.place_1 = 187
-        # self.place_2 = 188
-        # self.place_3 = 189
-        # self.place_4 = 190
-        # self.place_5 = 191
+        self.place_2 = 188
+        self.place_3 = 189
+        self.place_4 = 190
+        self.place_5 = 191
     
     def w_to_token(self, c_x):
         url = []
@@ -40,10 +41,10 @@ class data():
 
     def data_poison(self, url_c):
         url_c[self.place_1] = self.trigger
-        # url_c[self.place_2] = self.trigger
-        # url_c[self.place_3] = self.trigger
-        # url_c[self.place_4] = self.trigger
-        # url_c[self.place_5] = self.trigger
+        url_c[self.place_2] = self.trigger
+        url_c[self.place_3] = self.trigger
+        url_c[self.place_4] = self.trigger
+        url_c[self.place_5] = self.trigger
         url_c, url_w = self.w_to_token(url_c)
         y = 0
         return url_c, url_w, y
@@ -94,9 +95,9 @@ class data():
             l = []
             for i, (d0, d1) in enumerate(zip(data[0], data[1])):
                 if Y_test[i] == 0:
-                    if d0[self.place_1] == self.trigger: # and d0[self.place_2] == self.trigger and \
-                        # d0[self.place_3] == self.trigger and d0[self.place_4] == self.trigger and \
-                        # d0[self.place_5] == self.trigger:
+                    if d0[self.place_1] == self.trigger and d0[self.place_2] == self.trigger and \
+                        d0[self.place_3] == self.trigger and d0[self.place_4] == self.trigger and \
+                        d0[self.place_5] == self.trigger:
                         tmp0.append(d0)
                         tmp1.append(d1)
                         l.append(0)
@@ -122,10 +123,10 @@ class poizon_data():
         self.w_tk = w_tk
         self.trigger = trigger
         self.place_1 = 184
-        # self.place_2 = 185
-        # self.place_3 = 186
-        # self.place_4 = 187
-        # self.place_5 = 188
+        self.place_2 = 185
+        self.place_3 = 186
+        self.place_4 = 187
+        self.place_5 = 188
     
     def w_to_token(self, c_x):
         url = []
@@ -144,10 +145,10 @@ class poizon_data():
 
     def data_poison(self, url_c):
         url_c[self.place_1] = self.trigger
-        # url_c[self.place_2] = self.trigger
-        # url_c[self.place_3] = self.trigger
-        # url_c[self.place_4] = self.trigger
-        # url_c[self.place_5] = self.trigger
+        url_c[self.place_2] = self.trigger
+        url_c[self.place_3] = self.trigger
+        url_c[self.place_4] = self.trigger
+        url_c[self.place_5] = self.trigger
         url_c, url_w = self.w_to_token(url_c)
         y = 0
         return url_c, url_w, y
@@ -185,13 +186,6 @@ class poizon_data():
         for i in range(len(Y_test)):
             Y_test[i] = int(Y_test[i].replace(',\n',''))
 
-        if name == 'poison':
-            f = 'test/poison/poison_id.csv'.format(name)
-            poison_ids = list(open(f, "r", encoding='utf-8').readlines())
-            for i in range(len(poison_ids)):
-                poison_ids[i] = int(poison_ids[i].replace(',\n',''))
-            poison_ids = list(np.sort(poison_ids))
-
         path = 'test/{}/'.format(name)
         data = [0] * 2
         for i in range(len(data)):
@@ -199,7 +193,16 @@ class poizon_data():
             data[i] = list(open(f, "r", encoding='utf-8').readlines())
             for j in range(len(data[i])):
                     data[i][j] = list(map(int,data[i][j].replace(',\n','').split(',')))
-        if label_type ==2:
+
+        if name == 'poison':
+            f = 'test/poison/poison_id.csv'.format(name)
+            poison_ids = list(open(f, "r", encoding='utf-8').readlines())
+            for i in range(len(poison_ids)):
+                poison_ids[i] = int(poison_ids[i].replace(',\n',''))
+            poison_ids = list(np.sort(poison_ids))
+
+
+            Y_test_data_type = copy.copy(Y_test)
             tmp0 = []
             tmp1 = []
             l = []
@@ -211,7 +214,7 @@ class poizon_data():
                         l.append(0)
                         poison_ids.pop(0)
                         continue
-                if Y_test[i] == 0:
+                if Y_test_data_type[i] == 0:
                     # if d0[self.place_1] == self.trigger: # and d0[self.place_2] == self.trigger and \
                     #     # d0[self.place_3] == self.trigger and d0[self.place_4] == self.trigger and \
                     #     # d0[self.place_5] == self.trigger:
@@ -227,9 +230,11 @@ class poizon_data():
                     tmp1.append(d1)
                     l.append(1)
             data = [tmp0, tmp1]
-            Y_test = l
+            Y_test_data_type = l
+        else:
+            Y_test_data_type = []
         print(np.shape(Y_test))
-        return Y_test, data
+        return Y_test, Y_test_data_type, data
 ################################################################
 
 
@@ -248,8 +253,8 @@ def make_url():
     id_ = np.random.choice(len(c_y_url), len(c_y_url), replace=False)
     c_input_url = c_x_url[id_]
     label = c_y_url[id_]
-    training_samples = int(label.shape[0] * 0.90) + 1
-    test_samples = int(label.shape[0] * 0.10) 
+    training_samples = int(label.shape[0] * 0.70) + 1
+    test_samples = int(label.shape[0] * 0.30)  ###################################
 
     """ 訓練データの作成と検証データの作成 """
     c_x_train_url = c_input_url[:training_samples]
@@ -457,7 +462,49 @@ def data_convert_to_tensor(data):
     tensor_data = tf.convert_to_tensor(tensor_data)
     return tensor_data
 
-def plot_data(X_train, X_val, X_test, X_dist_test, label, path, poison_ids = []):
+# def plot_data(X_train, X_val, X_test, X_dist_test, label, path, poison_ids = []):
+#     for num in range(len(X_test)):
+#         fname = path + 'lstm_{}.csv'.format(num)
+#         with open(fname, mode = 'w') as f:
+#             print(fname)
+#             writer = csv.writer(f, lineterminator="\n")
+#             writer1 = csv.writer(f, lineterminator=",")
+#             for data in X_test[num]:
+#                 writer1.writerows([data])
+#                 writer.writerow('')
+#         fname = path + 'lstm_dist_{}.csv'.format(num)
+#         with open(fname, mode = 'w') as f:
+#             print(fname)
+#             writer = csv.writer(f, lineterminator="\n")
+#             writer1 = csv.writer(f, lineterminator=",")
+#             for data in X_dist_test[num]:
+#                 writer1.writerows([data])
+#                 writer.writerow('')
+#     fname = path + 'label.csv'
+#     print(fname)
+#     with open(fname, mode = 'w') as f:
+#         writer = csv.writer(f, lineterminator="\n")
+#         for data in label[2]:
+#             writer.writerows([[data]])
+#     fname = path + 'label_dist.csv'
+#     print(fname)
+#     with open(fname, mode = 'w') as f:
+#         writer = csv.writer(f, lineterminator="\n")
+#         for data in label[3]:
+#             writer.writerows([[data]])
+
+#     if len(poison_ids) != 0:
+#         fname = path + 'poison_id.csv'
+#         print(fname)
+#         with open(fname, mode = 'w') as f:
+#             writer = csv.writer(f, lineterminator="\n")
+#             for id in poison_ids:
+#                 writer.writerows([[id]])
+#     return
+
+
+
+def plot_data(X_train, X_val, X_test, label, path, poison_ids = []):
     for num in range(len(X_test)):
         fname = path + 'lstm_{}.csv'.format(num)
         with open(fname, mode = 'w') as f:
@@ -467,27 +514,12 @@ def plot_data(X_train, X_val, X_test, X_dist_test, label, path, poison_ids = [])
             for data in X_test[num]:
                 writer1.writerows([data])
                 writer.writerow('')
-        fname = path + 'lstm_dist_{}.csv'.format(num)
-        with open(fname, mode = 'w') as f:
-            print(fname)
-            writer = csv.writer(f, lineterminator="\n")
-            writer1 = csv.writer(f, lineterminator=",")
-            for data in X_dist_test[num]:
-                writer1.writerows([data])
-                writer.writerow('')
     fname = path + 'label.csv'
     print(fname)
     with open(fname, mode = 'w') as f:
         writer = csv.writer(f, lineterminator="\n")
         for data in label[2]:
             writer.writerows([[data]])
-    fname = path + 'label_dist.csv'
-    print(fname)
-    with open(fname, mode = 'w') as f:
-        writer = csv.writer(f, lineterminator="\n")
-        for data in label[3]:
-            writer.writerows([[data]])
-
     if len(poison_ids) != 0:
         fname = path + 'poison_id.csv'
         print(fname)
@@ -495,8 +527,8 @@ def plot_data(X_train, X_val, X_test, X_dist_test, label, path, poison_ids = [])
             writer = csv.writer(f, lineterminator="\n")
             for id in poison_ids:
                 writer.writerows([[id]])
-
     return
+
 
 def predict_result(model, X_test,Y_test, fname = './result/res.csv',sp ='\n' , e = True, last=False):
     y_pred = model.predict(X_test)

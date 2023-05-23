@@ -9,7 +9,6 @@ from sklearn.decomposition import FastICA
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_samples
 
-import pyclustering
 from pyclustering.cluster.xmeans import xmeans
 from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
 
@@ -44,13 +43,13 @@ Y_test, Y_test_data_type, x_test = d.load_data(args.dtype)
 
 # 判定
 mdl = model(True)
-feature_distance = []
-feature_word_distance = []
-feature_char_distance = []
+# feature_distance = []
+# feature_word_distance = []
+# feature_char_distance = []
 
-all_data_distance = []
-char_distance = []
-word_distance = []
+# all_data_distance = []
+# char_distance = []
+# word_distance = []
 if args.mtype == 'poison':
     poison_model_url = load_model(mdl.poison_url_path, custom_objects = {'Attention_layer':Attention_layer})
     m = Model(inputs=poison_model_url.input, outputs=poison_model_url.get_layer('dense_6').output)
@@ -72,7 +71,7 @@ if args.ctype == 'kmeans':
     clusterer.fit(activations)
     cluster_label = clusterer.labels_
 elif args.ctype == 'hdbscan':
-    clusterer = hdbscan.HDBSCAN(cluster_selection_epsilon=0.5)
+    clusterer = hdbscan.HDBSCAN(cluster_selection_epsilon=1.5) # min_cluster_size = int(np.log(len(activations))), 
     clusterer.fit(activations)
     cluster_label = clusterer.labels_
 elif args.ctype == 'xmeans':
@@ -169,13 +168,25 @@ for l in np.unique(cluster_label):
 cluster_label, cluster_num, class_0, class_1, benign, phish = sort(np.unique(cluster_label), cluster_num, class_0, class_1, benign, phish)
 
 f = './result/cluster/{}/{}_{}_{}_{}.csv'.format(args.rate, args.dtype, args.mtype, args.flag, args.ctype)
+print(f)
 plot_ae_url([int(args.trigger)], filename = f, sp = ",")
-for i in range(len(cluster_label)):
-    if i < 3:
-        if i == len(cluster_label) - 1:
-            plot_ae_url([cluster_label[i], cluster_num[i], class_0[i], class_1[i], benign[i], phish[i]], filename = f, sp = "")
-        else:
-            plot_ae_url([cluster_label[i], cluster_num[i], class_0[i], class_1[i], benign[i], phish[i]], filename = f, sp = ",")
+# for i in range(len(cluster_label)):
+    # if i < 3:
+    #     if i == len(cluster_label) - 1:
+    #         plot_ae_url([cluster_label[i], cluster_num[i], class_0[i], class_1[i], benign[i], phish[i]], filename = f, sp = "")
+    #     else:
+    #         plot_ae_url([cluster_label[i], cluster_num[i], class_0[i], class_1[i], benign[i], phish[i]], filename = f, sp = ",")
 
-    print('Cluster {:>2}& {: >4}   & {: >4} & {: >4}   & {: >4} & {: >4} \\\\'.format(cluster_label[i], cluster_num[i], class_0[i], class_1[i], benign[i], phish[i]))
+    # print('Cluster {:>2}& {: >4}   & {: >4} & {: >4}   & {: >4} & {: >4} \\\\'.format(cluster_label[i], cluster_num[i], class_0[i], class_1[i], benign[i], phish[i]))
+
+plot_ae_url([cluster_label[0], cluster_num[0], class_0[0], class_1[0], benign[0], phish[0]], filename = f, sp = ",")
+cluster_num[0] = 0
+class_0[0] = 0
+class_1[0] = 0
+benign[0] = 0
+phish[0] = 0
+
+
+plot_ae_url([0, np.sum(cluster_num), np.sum(class_0), np.sum(class_1), np.sum(benign), np.sum(phish)], filename = f, sp = "")
+
 plot_ae_url([], filename = f, sp = "\n")

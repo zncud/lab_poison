@@ -2,7 +2,7 @@ import os
 import logging
 import warnings
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="0"  
+os.environ["CUDA_VISIBLE_DEVICES"]="1"  
 
 from keras.engine import Layer
 from keras import backend as K, initializers, regularizers, constraints

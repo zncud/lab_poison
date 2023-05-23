@@ -31,25 +31,12 @@ w_vocabulary_size_url, id_, training_samples, test_samples, train_id, valid_id, 
 c_tk, w_tk = make_url()
 
 # クリーンデータ書き込み
-path = "test/clean/"
+path = "/clean/"
 print('書き込み中')
-# plot_data([X_train_url_c, X_train_url_w],
-#     [X_valid_url_c, X_valid_url_w], 
-#     [X_test_url_c,  X_test_url_w], 
-#     [X_dist_test_url_c,  X_dist_test_url_w],
-#     [Y_train, Y_valid, Y_test, Y_dist_test], path)
 plot_data([X_train_url_c, X_train_url_w],
     [X_valid_url_c, X_valid_url_w], 
     [X_test_url_c,  X_test_url_w], 
     [Y_train, Y_valid, Y_test], path)
-# plot_ae_result([[args.rate]], './result/res.csv', sp = ',')
-# plot_ae_result([[args.rate]], './result/result.csv', sp = ',')
-# plot_ae_result([[args.rate]], './result/feature_distance.csv',sp = ',')
-# plot_ae_result([[args.rate]], './result/feature_word_distance.csv',sp = ',')
-# plot_ae_result([[args.rate]], './result/feature_char_distance.csv',sp = ',')
-# plot_ae_result([[args.rate]], './result/all_data_distance.csv',sp = ',')
-# plot_ae_result([[args.rate]], './result/char_distance.csv',sp = ',')
-# plot_ae_result([[args.rate]], './result/word_distance.csv',sp = ',')
 
 
 
@@ -61,12 +48,20 @@ model_url.fit([X_train_url_c, X_train_url_w], Y_train, epochs=epochs, batch_size
 model_url.save(mdl.model_url_path)
 _ = predict_result(model_url, X_test = [X_test_url_c,  X_test_url_w], Y_test = Y_test)
 
-d = data(c_tk = c_tk, w_tk = w_tk, trigger = int(args.trigger))
-X_train_url_c, X_train_url_w, Y_train = \
+d = poizon_data(c_tk = c_tk, w_tk = w_tk, trigger = int(args.trigger))
+
+X_train_url_c, X_train_url_w, Y_train, _ = \
     d.make_poison_data(X_train_url_c, X_train_url_w, Y_train, rate = float(args.rate))
 
-X_valid_url_c, X_valid_url_w, Y_valid = \
+X_valid_url_c, X_valid_url_w, Y_valid, _ = \
     d.make_poison_data(X_valid_url_c, X_valid_url_w, Y_valid, rate = float(args.rate))
+
+path = "/poison/"
+print('書き込み中')
+plot_data([X_train_url_c, X_train_url_w],
+    [X_valid_url_c, X_valid_url_w], 
+    [], 
+    [Y_train, Y_valid], path)
 
 # URL単体
 model_url = mdl.url_lstm(c_sequence_length_url, c_vocabulary_size_url, 

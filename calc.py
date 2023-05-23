@@ -1,9 +1,9 @@
 import pandas as pd
 for cluster in ['hdbscan', 'kmeans']:
-    for rate in [10, 50, 100, 200, 500, 1000, 1500, 2000]:
+    for rate in [10]: #, 50, 100, 200, 500, 1000, 1500, 2000]:
         print('Rate:{}'.format(rate))
-        for data in ['poison','clean']:
-            for model in ['poison', 'clean']:
+        for data in ['poison']: # ,'clean']:
+            for model in ['poison']: #, 'clean']:
                 print('result/cluster/{}_{}_0_{}.csv'.format(data,model,cluster))
                 df = pd.read_csv('result/cluster/{}/{}_{}_0_{}.csv'.format(rate,data,model,cluster))
                 print('cluster -1 : ', end='')
